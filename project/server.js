@@ -5,10 +5,32 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import axios from "axios";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+app.use(cors()); // Enable CORS
+app.use(express.json());
+
 const SECRET_KEY = process.env.SECRET_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+app.post("/api/gemini", async (req, res) => {
+    try { console.log("hello ")
+        const userMessage = req.body.message;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key=${GEMINI_API_KEY}`;
+
+        const response = await axios.post(apiUrl, {
+            contents: [{ parts: [{ text: userMessage }] }]
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error("Error calling Gemini API:", error.response ? error.response.data : error.message);
+        res.status(500).json({ error: "Error fetching response from Gemini API" });
+    }
+});
 
 console.log("MongoDB URI:", process.env.MONGO_URI);
 
